@@ -1,86 +1,48 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
-
-        // Step 1. Commands
-        // Define commands to invoke certain actions in the console to:
-        // Diplay the current inventory, create a new item, replace an item, delete an item, or exit the program.
-
-        // Step 2. Read
-        // Check if any information stored regarding inventory is present
-        // Fetch info of all items and their properties stored in the project and display them in an organized fashion
-        // If no inventory info is found inform the user and only allow them to preform actions for creating new items,
-        // while disallowing actions letting the user attempt to display, replace, or delete any non-existant item info
-        
-        // Step 3. Create, Update, and Delete
-        // Preform actions outlined in Step 2, if item into exists:
-        // promt user to refine their selection based on item ID based on info fetched
-        // Have logic to select a specific segment of the inventory info based on item ID
-        // After user selects an item, user promted for command action to either Create, Replace, or Delete an Item
-
-        // Step 4. Once info in the database is changed preform Step 2 - Step 3 again
+using System.Collections.Generic;
 
 class InventoryItem
 {
-    public string SKU { get; set; }
-    public string Name { get; set; }
+    public string? SKU { get; set; }
+    public string? Name { get; set; }
     public int Quantity { get; set; }
 }
 
 class Program
 {
-    static Dictionary<string, InventoryItem> inventory = new Dictionary<string, InventoryItem>();
+    static readonly Dictionary<string, InventoryItem> inventory = new();
+    static bool isItemLocated = false;
+    static bool continueRunning = true;
+    static InventoryItem? currentItem = null;
 
-    static void AddInventoryItem(InventoryItem item)
+    static readonly Dictionary<string, (Action, string)> commandDefinitions = new()
+
+    //command user enters into CLI, method command refrences, description of what a command does - SSOT for all CLI commands.
     {
-        if (!inventory.ContainsKey(item.SKU))
-        {
-            inventory.Add(item.SKU, item);
-            Console.WriteLine("Item added successfully.");
-        }
-        else
-        {
-            Console.WriteLine("An item with this SKU either already exists or is not possible");
-        }
-    }
+        { "help", (PrintCommandList, "Displays the list of available commands.") },
+        { "refreshInventory", (FetchInventory, "Displays the current inventory.") },
+        { "item-create", (CreateItem, "Creates a new item in the inventory.") },
+        { "item-locate", (LocateItem, "Locates an item in the inventory by SKU.") },
+        { "item-delete", (DeleteItem, "Deletes the currently located item from the inventory.") },
+        { "item-replace", (ReplaceItem, "Replaces the details of the currently located item.") },
+        { "clear", (Console.Clear, "Clears the console screen.") },
+        { "exit", (() => continueRunning = false, "Exits the program.") }
+    };
 
     static void Main()
-    {
-        string[] ConsoleCommands = 
-        {
-            "refreshInventory", "item-create", "item-delete", "item-replace", "clear", "exit"
-        };
-
-        bool continueRunning = true;
-
+   {
         while (continueRunning)
         {
             Console.WriteLine("Enter a command:");
             string? userInput = Console.ReadLine();
 
-            if (userInput != null)
+            if (!string.IsNullOrEmpty(userInput) && commandDefinitions.TryGetValue(userInput, out (Action, string) value))
             {
-                switch (userInput)
-                {
-                    case "refreshInventory":
-                        Console.Clear();
-                        FetchInventory();
-                        break;
-                    case "item-create":
-                        CreateItem();
-                        break;
-                    case "item-delete":
-                        
-                    case "clear":
-                        Console.Clear();
-                        break;
-                    case "exit":
-                        continueRunning = false;
-                        break;
-                    default:
-                        Console.WriteLine("Inalid Command.");
-                        break;
-                    // other cases...
-                }
+                value.Item1.Invoke();
+            }
+            else
+            {
+                Console.WriteLine("Invalid Command.");
             }
         }
     }
@@ -88,67 +50,141 @@ class Program
     static void CreateItem()
     {
         Console.WriteLine("Enter SKU:");
-        string ?sku = Console.ReadLine();
+        string? sku = Console.ReadLine();
 
-        Console.WriteLine("Enter Name:");
-        string ?name = Console.ReadLine(); 
+        // Check if SKU already exists in the inventory
+        if (!string.IsNullOrEmpty(sku) && !inventory.ContainsKey(sku))
+        {
+            Console.WriteLine("Enter Name:");
+            string? name = Console.ReadLine();
 
-        Console.WriteLine("Enter Quantity:");
-        int quantity = int.Parse(Console.ReadLine());
+            Console.WriteLine("Enter Quantity:");
+            int quantity;
+            while (!int.TryParse(Console.ReadLine(), out quantity))
+            {
+                Console.WriteLine("Invalid input. Please enter a numeric quantity:");
+            }
 
-        InventoryItem newItem = new InventoryItem { SKU = sku, Name = name, Quantity = quantity };
-        AddInventoryItem(newItem);  
+            InventoryItem newItem = new() { SKU = sku, Name = name, Quantity = quantity };
+            inventory.Add(sku, newItem);
+            Console.WriteLine("Item added successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Invalid SKU or item already exists.");
+        }
+    }
+    
+    static void LocateItem()
+    {
+        Console.WriteLine("Enter the SKU of the item:");
+        string? userInput = Console.ReadLine();
+
+        if (!string.IsNullOrEmpty(userInput) && inventory.TryGetValue(userInput, out InventoryItem? item))
+        {
+            currentItem = item; // Assign the locally found item to the global currentItem
+            isItemLocated = true;
+            Console.WriteLine($"Item {currentItem.SKU} found: {currentItem.Name}, Quantity: {currentItem.Quantity}");
+        }
+        else
+        {
+            currentItem = null;
+            isItemLocated = false;
+            Console.WriteLine("Item not found.");
+        }
+    }
+
+    static void DeleteItem()
+    {
+        if (isItemLocated && currentItem != null)
+        {
+            inventory.Remove(currentItem.SKU!); // If current item is invalid or non-existant, handled by print message below.
+            isItemLocated = false;
+            currentItem = null;
+            Console.WriteLine("Item deleted successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Item is non-existant or invalid! Please locate a valid item using 'item-locate' before using this function.");
+        }
+    }
+
+    static void ReplaceItem()
+    {
+        if (isItemLocated && currentItem != null)
+        {
+            // Code to replace the item's details
+            isItemLocated = false;
+            currentItem = null;
+        }
+        else
+        {
+            Console.WriteLine("Please use command 'item-locate' to first locate an item before using this function.");
+        }
+    }
+    static void PrintCommandList()
+    {
+        Console.WriteLine("Available commands:");
+        foreach (var command in commandDefinitions)
+        {
+            Console.WriteLine($"{command.Key}: {command.Value.Item2}");
+        }
     }
 
     static void FetchInventory()
     {
-            if (inventory.Count == 0)
-    {
-        Console.WriteLine("The inventory is currently empty.");
-        return;
-    }
-    Console.WriteLine($"{inventory.Count} Items Currently in Inventory:");
-    Console.WriteLine(new string('-', Console.WindowWidth));
-    Console.WriteLine("SKU\t\tName\t\tQuantity");
-    Console.WriteLine(new string('-', Console.WindowWidth));
-
-    foreach (var item in inventory)
-    {
-        Console.WriteLine($"{item.Key}\t\t{item.Value.Name}\t\t{item.Value.Quantity}");
-    }
-    Console.WriteLine(new string('-', Console.WindowWidth));
-    }
-
-static void LocateItem()
-{
-    Console.WriteLine("Enter the SKU of the item:");
-    string? userInput = Console.ReadLine();
-
-    if (!string.IsNullOrEmpty(userInput))
-    {
-        if (inventory.TryGetValue(userInput, out InventoryItem item))
+        if (inventory.Count == 0)
         {
-            // The item was found, `item` now contains the InventoryItem
-            // You can now perform operations on this item
-
-            // Example: Displaying the item
-            Console.WriteLine($"Item {item.SKU} found: {item.Name}, Quantity: {item.Quantity}");
-
-            // Here, you can also add further logic to update or delete the item
+            Console.Clear();
+            Console.WriteLine("The inventory is currently empty.");
+            return;
         }
-        else
+        
+        // Initial column width setup
+        int maxSkuLength = 9; // Based on SKU format
+        int quantityHeaderLength = "Quantity".Length;
+        int maxQuantityLength = inventory.Values.Max(item => item.Quantity.ToString().Length);
+        maxQuantityLength = Math.Max(maxQuantityLength, quantityHeaderLength);
+
+        // Find the maximum length of item names and calculate initial widths
+        int maxNameLength = inventory.Values.Max(item => item.Name?.Length ?? 0);
+        int skuColumnWidth = maxSkuLength;
+        int nameColumnWidth = maxNameLength;
+        int quantityColumnWidth = maxQuantityLength;
+
+        // Calculate the total width for the table
+        int visualWidthBuffer = 4; //An addtional buffer refrenced by all proceeding width calculations
+        int totalTableWidth = skuColumnWidth + nameColumnWidth + quantityColumnWidth + visualWidthBuffer; 
+
+
+        string inventoryCountLine = $"{inventory.Count} Items Currently in Inventory:";
+        int minimumSeparatorLength = inventoryCountLine.Length + visualWidthBuffer; 
+
+        // Adjust table width based on the longest line
+        totalTableWidth = Math.Max(totalTableWidth, minimumSeparatorLength);
+
+        // Adjust name column width for centering if names are short
+        if (totalTableWidth > (skuColumnWidth + maxNameLength + quantityColumnWidth + visualWidthBuffer))
         {
-            Console.WriteLine("Item not found.");
+            nameColumnWidth = totalTableWidth - skuColumnWidth - quantityColumnWidth - visualWidthBuffer;
         }
-    }
-    else
-    {
-        Console.WriteLine("Invalid input. Please enter a valid SKU.");
+
+        string tableSeparator = new string('-', totalTableWidth);
+
+        Console.Clear();
+        Console.WriteLine(inventoryCountLine);
+        Console.WriteLine(tableSeparator);
+
+        // Print headers
+        string headerFormat = "{0,-" + skuColumnWidth + "} {1,-" + nameColumnWidth + "} {2,-" + quantityColumnWidth + "}";
+        Console.WriteLine(headerFormat, "SKU", "Name", "Quantity");
+        Console.WriteLine(tableSeparator);
+
+        foreach (var item in inventory)
+        {
+            // Print each item row
+            Console.WriteLine(headerFormat, item.Key, item.Value.Name, item.Value.Quantity);
+        }
+        Console.WriteLine(tableSeparator);
     }
 }
-    };
-}
-
-
-
-

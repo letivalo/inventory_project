@@ -26,3 +26,17 @@ C:\Users\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\refi
 C:\Users\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.pdb
 C:\Users\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.genruntimeconfig.cache
 C:\Users\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\ref\inventory_project.dll
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.GeneratedMSBuildEditorConfig.editorconfig
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.AssemblyInfoInputs.cache
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.AssemblyInfo.cs
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.csproj.CoreCompileInputs.cache
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.dll
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\refint\inventory_project.dll
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.pdb
+C:\Clay\Projects\inventory_project\inventory_project\bin\Debug\net8.0\inventory_project.exe
+C:\Clay\Projects\inventory_project\inventory_project\bin\Debug\net8.0\inventory_project.deps.json
+C:\Clay\Projects\inventory_project\inventory_project\bin\Debug\net8.0\inventory_project.runtimeconfig.json
+C:\Clay\Projects\inventory_project\inventory_project\bin\Debug\net8.0\inventory_project.dll
+C:\Clay\Projects\inventory_project\inventory_project\bin\Debug\net8.0\inventory_project.pdb
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\inventory_project.genruntimeconfig.cache
+C:\Clay\Projects\inventory_project\inventory_project\obj\Debug\net8.0\ref\inventory_project.dll
